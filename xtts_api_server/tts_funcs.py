@@ -517,6 +517,22 @@ class TTSWrapper:
 
     def get_speaker_wav(self, speaker_name_or_path):
         """ Gets the speaker_wav(s) for a given speaker name. """
+        if speaker_name_or_path is None or str(speaker_name_or_path).strip() == "":
+            # Prefer an explicit default speaker in the root speaker folder.
+            default_speaker_name = os.getenv("DEFAULT_SPEAKER_WAV", "speaker.wav")
+            default_speaker_path = (
+                default_speaker_name
+                if os.path.isabs(default_speaker_name)
+                else os.path.join(self.speaker_folder, default_speaker_name)
+            )
+            if os.path.isfile(default_speaker_path):
+                return default_speaker_path
+
+            speakers = self._get_speakers()
+            if len(speakers) == 0:
+                raise ValueError("No speakers found. Please add at least one wav file to speaker folder.")
+            return speakers[0]["speaker_wav"]
+
         if speaker_name_or_path.endswith('.wav'):
             # it's a file name
             if os.path.isabs(speaker_name_or_path):

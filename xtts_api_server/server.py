@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse,StreamingResponse
 
 from pydantic import BaseModel
+from typing import Optional
 import uvicorn
 
 import os
@@ -132,12 +133,12 @@ class TTSSettingsRequest(BaseModel):
 
 class SynthesisRequest(BaseModel):
     text: str
-    speaker_wav: str 
+    speaker_wav: Optional[str] = None
     language: str
 
 class SynthesisFileRequest(BaseModel):
     text: str
-    speaker_wav: str 
+    speaker_wav: Optional[str] = None
     language: str
     file_name_or_path: str  
 
@@ -222,7 +223,7 @@ def set_tts_settings_endpoint(tts_settings_req: TTSSettingsRequest):
         raise HTTPException(status_code=400, detail=str(e))
 
 @app.get('/tts_stream')
-async def tts_stream(request: Request, text: str = Query(), speaker_wav: str = Query(), language: str = Query()):
+async def tts_stream(request: Request, text: str = Query(), speaker_wav: Optional[str] = Query(default=None), language: str = Query()):
     # Validate local model source.
     if XTTS.model_source != "local":
         raise HTTPException(status_code=400,
