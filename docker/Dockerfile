@@ -22,55 +22,60 @@ RUN python3 -m pip install --upgrade pip setuptools wheel ninja virtualenv
 RUN pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu121
 RUN pip install deepspeed
 RUN pip install xtts-api-server
-# Patch coqpit deserialize bug that can crash on issubclass() with non-class typing fields.
+# Runtime patch for coqpit on Python 3.10:
+# - handle PEP604 unions (e.g. float | list[float])
+# - guard issubclass() calls for non-class typing objects
 RUN python3 - <<'PY'
-import pathlib
-import re
-import coqpit.coqpit as coqpit_module
+import site
+from pathlib import Path
 
-p = pathlib.Path(coqpit_module.__file__)
-s = p.read_text(encoding="utf-8")
+sitecustomize_path = Path(site.getsitepackages()[0]) / "sitecustomize.py"
+sitecustomize_path.write_text(
+    """
+import types
+from typing import Union, get_origin
 
-pattern = r"if\s+issubclass\(field_type,\s*Serializable\):"
-replacement = "if isinstance(field_type, type) and issubclass(field_type, Serializable):"
+try:
+    import coqpit.coqpit as _coqpit
 
-patched, count = re.subn(pattern, replacement, s)
-s = patched
-count_total = count
+    def _patched_is_union(arg_type):
+        try:
+            origin = get_origin(arg_type)
+            if origin is Union:
+                return True
+        except Exception:
+            pass
+        try:
+            if isinstance(arg_type, types.UnionType):
+                return True
+        except Exception:
+            pass
+        try:
+            return _coqpit.safe_issubclass(arg_type.__origin__, Union)
+        except Exception:
+            return False
 
-union_pattern = r"""def is_union\(arg_type: Any\) -> bool:\n(?:    .*\n)+?        return False\n"""
-union_replacement = """def is_union(arg_type: Any) -> bool:
-    \"\"\"Check if the input type is `Union` (supports typing.Union and PEP 604 `A | B`).\"\"\"
-    import types
-    from typing import get_origin
+    def _patched_deserialize(x, field_type):
+        if _coqpit.is_dict(field_type):
+            return _coqpit._deserialize_dict(x)
+        if _coqpit.is_list(field_type):
+            return _coqpit._deserialize_list(x, field_type)
+        if _coqpit.is_union(field_type):
+            return _coqpit._deserialize_union(x, field_type)
+        if isinstance(field_type, type) and issubclass(field_type, _coqpit.Serializable):
+            return field_type.deserialize_immutable(x)
+        if _coqpit.is_primitive_type(field_type):
+            return _coqpit._deserialize_primitive_types(x, field_type)
+        raise ValueError(f" [!] '{type(x)}' value type of '{x}' does not match '{field_type}' field type.")
 
-    try:
-        origin = get_origin(arg_type)
-        if origin is Union:
-            return True
-    except Exception:
-        pass
-
-    try:
-        if isinstance(arg_type, types.UnionType):
-            return True
-    except Exception:
-        pass
-
-    try:
-        return safe_issubclass(arg_type.__origin__, Union)
-    except AttributeError:
-        return False
-"""
-patched2, count2 = re.subn(union_pattern, union_replacement, s, flags=re.MULTILINE)
-s = patched2
-count_total += count2
-
-if count_total > 0:
-    p.write_text(s, encoding="utf-8")
-    print(f"Patched {p} ({count_total} total replacement(s))")
-else:
-    print(f"No patch needed in {p} (already patched or code changed)")
+    _coqpit.is_union = _patched_is_union
+    _coqpit._deserialize = _patched_deserialize
+except Exception:
+    pass
+""".lstrip(),
+    encoding="utf-8",
+)
+print(f"Wrote runtime patch: {sitecustomize_path}")
 PY
 
 # Expose the container ports
