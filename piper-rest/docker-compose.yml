@@ -13,9 +13,12 @@ services:
       - PIPER_MODELS_DIR=/app/data/models
       - PIPER_OUTPUT_DIR=/app/data/output
       - PIPER_MODEL_PATH=
-      - PIPER_MODEL_URL=
-      - PIPER_MODEL_CONFIG_URL=
+      # Default Turkish model from rhasspy/piper-voices:
+      - PIPER_MODEL_URL=https://huggingface.co/rhasspy/piper-voices/resolve/main/tr/tr_TR/dfki/medium/tr_TR-dfki-medium.onnx
+      - PIPER_MODEL_CONFIG_URL=https://huggingface.co/rhasspy/piper-voices/resolve/main/tr/tr_TR/dfki/medium/tr_TR-dfki-medium.onnx.json
       - PIPER_DEFAULT_SPEAKER=
+      # Optional for private/gated Hugging Face repos
+      - HF_TOKEN=
     volumes:
       - ./data/models:/app/data/models
       - ./data/output:/app/data/output

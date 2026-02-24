@@ -13,6 +13,7 @@ Bu servis XTTS'den bağımsız, ayrı bir Docker Compose ile çalışan hafif bi
 1. Model dosyasını yerleştirin:
 - `piper-rest/data/models/` içine bir `*.onnx` dosyası koyun.
 - Varsa ilgili `*.onnx.json` config dosyasını da aynı klasöre koyun.
+ - Alternatif: `docker-compose.yml` içindeki `PIPER_MODEL_URL` ve `PIPER_MODEL_CONFIG_URL` ile Hugging Face'ten otomatik indirilsin.
 
 2. Çalıştırın:
 ```bash
@@ -35,3 +36,4 @@ curl -X POST "http://127.0.0.1:8030/tts" \
 ## Notlar
 - `speaker_id`, `length_scale`, `noise_scale`, `noise_w` parametrelerini `/tts` isteğinde verebilirsiniz.
 - `PIPER_MODEL_URL` ve `PIPER_MODEL_CONFIG_URL` doluysa model otomatik indirilebilir.
+- Özel/gated HF repo kullanıyorsanız `HF_TOKEN` ortam değişkenini doldurun.

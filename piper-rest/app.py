@@ -18,6 +18,7 @@ MODEL_PATH_ENV = os.getenv("PIPER_MODEL_PATH", "")
 MODEL_URL = os.getenv("PIPER_MODEL_URL", "")
 MODEL_CONFIG_URL = os.getenv("PIPER_MODEL_CONFIG_URL", "")
 DEFAULT_SPEAKER = os.getenv("PIPER_DEFAULT_SPEAKER", "")
+HF_TOKEN = os.getenv("HF_TOKEN", "")
 
 
 class TTSRequest(BaseModel):
@@ -34,7 +35,11 @@ class TTSFileRequest(TTSRequest):
 
 def _download_file(url: str, target: Path) -> None:
     target.parent.mkdir(parents=True, exist_ok=True)
-    with requests.get(url, stream=True, timeout=120) as resp:
+    headers = {}
+    if HF_TOKEN.strip():
+        headers["Authorization"] = f"Bearer {HF_TOKEN.strip()}"
+
+    with requests.get(url, stream=True, timeout=120, headers=headers) as resp:
         resp.raise_for_status()
         with target.open("wb") as f:
             for chunk in resp.iter_content(chunk_size=1024 * 256):
