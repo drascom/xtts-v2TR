@@ -22,8 +22,22 @@ RUN python3 -m pip install --upgrade pip setuptools wheel ninja virtualenv
 RUN pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu121
 RUN pip install deepspeed
 RUN pip install xtts-api-server
-# Force known-compatible coqpit version after deps are resolved.
-RUN pip install --force-reinstall "coqpit==0.0.16"
+# Patch coqpit deserialize bug that can crash on issubclass() with non-class typing fields.
+RUN python3 - <<'PY'
+import pathlib
+import coqpit
+
+p = pathlib.Path(coqpit.__file__)
+s = p.read_text(encoding="utf-8")
+old = "if issubclass(field_type, Serializable):"
+new = "if isinstance(field_type, type) and issubclass(field_type, Serializable):"
+
+if old not in s:
+    raise SystemExit(f\"Expected pattern not found in {p}\")
+
+p.write_text(s.replace(old, new), encoding="utf-8")
+print(f\"Patched {p}\")
+PY
 
 # Expose the container ports
 EXPOSE 8020
