@@ -35,9 +35,40 @@ pattern = r"if\s+issubclass\(field_type,\s*Serializable\):"
 replacement = "if isinstance(field_type, type) and issubclass(field_type, Serializable):"
 
 patched, count = re.subn(pattern, replacement, s)
-if count > 0:
-    p.write_text(patched, encoding="utf-8")
-    print(f"Patched {p} ({count} occurrence(s))")
+s = patched
+count_total = count
+
+union_pattern = r"""def is_union\(arg_type: Any\) -> bool:\n(?:    .*\n)+?        return False\n"""
+union_replacement = """def is_union(arg_type: Any) -> bool:
+    \"\"\"Check if the input type is `Union` (supports typing.Union and PEP 604 `A | B`).\"\"\"
+    import types
+    from typing import get_origin
+
+    try:
+        origin = get_origin(arg_type)
+        if origin is Union:
+            return True
+    except Exception:
+        pass
+
+    try:
+        if isinstance(arg_type, types.UnionType):
+            return True
+    except Exception:
+        pass
+
+    try:
+        return safe_issubclass(arg_type.__origin__, Union)
+    except AttributeError:
+        return False
+"""
+patched2, count2 = re.subn(union_pattern, union_replacement, s, flags=re.MULTILINE)
+s = patched2
+count_total += count2
+
+if count_total > 0:
+    p.write_text(s, encoding="utf-8")
+    print(f"Patched {p} ({count_total} total replacement(s))")
 else:
     print(f"No patch needed in {p} (already patched or code changed)")
 PY
