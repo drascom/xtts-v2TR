@@ -1,0 +1,17 @@
+services:
+  coqui-rest:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: coqui-rest
+    restart: unless-stopped
+    ports:
+      - "8040:8040"
+    environment:
+      - COQUI_MODEL_NAME=tts_models/en/ljspeech/tacotron2-DDC
+      - COQUI_USE_CUDA=false
+      - COQUI_OUTPUT_DIR=/app/data/output
+      - COQUI_SPEAKERS_DIR=/app/data/speakers
+    volumes:
+      - ./data/output:/app/data/output
+      - ./data/speakers:/app/data/speakers
