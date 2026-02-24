@@ -1,0 +1,21 @@
+services:
+  piper-rest:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: piper-rest
+    restart: unless-stopped
+    ports:
+      - "8030:8030"
+    environment:
+      # Option 1: put a .onnx file manually under ./data/models
+      # Option 2: set URL(s) below for auto-download on first request/startup
+      - PIPER_MODELS_DIR=/app/data/models
+      - PIPER_OUTPUT_DIR=/app/data/output
+      - PIPER_MODEL_PATH=
+      - PIPER_MODEL_URL=
+      - PIPER_MODEL_CONFIG_URL=
+      - PIPER_DEFAULT_SPEAKER=
+    volumes:
+      - ./data/models:/app/data/models
+      - ./data/output:/app/data/output
