@@ -4,6 +4,8 @@ services:
   xttsapiserver:
     image: xttsapiserver
     env_file: .env
+    environment:
+      - COQUI_TOS_AGREED=1
     build:
       context: ..
       dockerfile: ./docker/Dockerfile
