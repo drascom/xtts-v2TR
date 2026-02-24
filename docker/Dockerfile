@@ -25,18 +25,21 @@ RUN pip install xtts-api-server
 # Patch coqpit deserialize bug that can crash on issubclass() with non-class typing fields.
 RUN python3 - <<'PY'
 import pathlib
-import coqpit
+import re
+import coqpit.coqpit as coqpit_module
 
-p = pathlib.Path(coqpit.__file__)
+p = pathlib.Path(coqpit_module.__file__)
 s = p.read_text(encoding="utf-8")
-old = "if issubclass(field_type, Serializable):"
-new = "if isinstance(field_type, type) and issubclass(field_type, Serializable):"
 
-if old not in s:
-    raise SystemExit(f\"Expected pattern not found in {p}\")
+pattern = r"if\s+issubclass\(field_type,\s*Serializable\):"
+replacement = "if isinstance(field_type, type) and issubclass(field_type, Serializable):"
 
-p.write_text(s.replace(old, new), encoding="utf-8")
-print(f\"Patched {p}\")
+patched, count = re.subn(pattern, replacement, s)
+if count > 0:
+    p.write_text(patched, encoding="utf-8")
+    print(f"Patched {p} ({count} occurrence(s))")
+else:
+    print(f"No patch needed in {p} (already patched or code changed)")
 PY
 
 # Expose the container ports
