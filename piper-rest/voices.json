@@ -1,0 +1,20 @@
+{
+  "tr_dfki_female": {
+    "description": "Turkish female (DFKI medium)",
+    "speaker_id": 0,
+    "model_url": "https://huggingface.co/rhasspy/piper-voices/resolve/main/tr/tr_TR/dfki/medium/tr_TR-dfki-medium.onnx",
+    "config_url": "https://huggingface.co/rhasspy/piper-voices/resolve/main/tr/tr_TR/dfki/medium/tr_TR-dfki-medium.onnx.json"
+  },
+  "en_us_amy_female": {
+    "description": "English US female (Amy medium)",
+    "speaker_id": 0,
+    "model_url": "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/amy/medium/en_US-amy-medium.onnx",
+    "config_url": "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/amy/medium/en_US-amy-medium.onnx.json"
+  },
+  "en_gb_alba_female": {
+    "description": "English UK female (Alba medium)",
+    "speaker_id": 0,
+    "model_url": "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_GB/alba/medium/en_GB-alba-medium.onnx",
+    "config_url": "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_GB/alba/medium/en_GB-alba-medium.onnx.json"
+  }
+}

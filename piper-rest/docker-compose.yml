@@ -8,16 +8,14 @@ services:
     ports:
       - "8030:8030"
     environment:
-      # Option 1: put a .onnx file manually under ./data/models
-      # Option 2: set URL(s) below for auto-download on first request/startup
       - PIPER_MODELS_DIR=/app/data/models
       - PIPER_OUTPUT_DIR=/app/data/output
+      - PIPER_VOICES_FILE=/app/voices.json
+      - PIPER_DEFAULT_MODEL=tr_dfki_female
       - PIPER_MODEL_PATH=
-      # Default Turkish model from rhasspy/piper-voices:
-      - PIPER_MODEL_URL=https://huggingface.co/rhasspy/piper-voices/resolve/main/tr/tr_TR/dfki/medium/tr_TR-dfki-medium.onnx
-      - PIPER_MODEL_CONFIG_URL=https://huggingface.co/rhasspy/piper-voices/resolve/main/tr/tr_TR/dfki/medium/tr_TR-dfki-medium.onnx.json
+      - PIPER_MODEL_URL=
+      - PIPER_MODEL_CONFIG_URL=
       - PIPER_DEFAULT_SPEAKER=
-      # Optional for private/gated Hugging Face repos
       - HF_TOKEN=
     volumes:
       - ./data/models:/app/data/models
