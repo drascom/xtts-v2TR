@@ -11,7 +11,9 @@ from TTS.api import TTS
 
 app = FastAPI(title="Coqui TTS REST", version="1.0.0")
 
-MODEL_NAME = os.getenv("COQUI_MODEL_NAME", "tts_models/en/ljspeech/tacotron2-DDC")
+MODEL_NAME = os.getenv("COQUI_MODEL_NAME", "tts_models/tr/common-voice/glow-tts")
+MODEL_PATH = os.getenv("COQUI_MODEL_PATH", "")
+CONFIG_PATH = os.getenv("COQUI_CONFIG_PATH", "")
 USE_CUDA = os.getenv("COQUI_USE_CUDA", "false").lower() == "true"
 OUTPUT_DIR = Path(os.getenv("COQUI_OUTPUT_DIR", "/app/data/output"))
 SPEAKERS_DIR = Path(os.getenv("COQUI_SPEAKERS_DIR", "/app/data/speakers"))
@@ -72,10 +74,17 @@ def startup() -> None:
     SPEAKERS_DIR.mkdir(parents=True, exist_ok=True)
 
     try:
-        ENGINE = TTS(MODEL_NAME, progress_bar=False)
+        if MODEL_PATH and CONFIG_PATH:
+            ENGINE = TTS(model_path=MODEL_PATH, config_path=CONFIG_PATH, progress_bar=False)
+        else:
+            ENGINE = TTS(MODEL_NAME, progress_bar=False)
         if USE_CUDA and torch.cuda.is_available():
             ENGINE = ENGINE.to("cuda")
     except Exception as exc:
+        if MODEL_PATH and CONFIG_PATH:
+            raise RuntimeError(
+                f"Failed to initialize model from model_path='{MODEL_PATH}', config_path='{CONFIG_PATH}': {exc}"
+            ) from exc
         raise RuntimeError(f"Failed to initialize model '{MODEL_NAME}': {exc}") from exc
 
 
@@ -84,6 +93,8 @@ def health() -> dict:
     return {
         "status": "ok" if ENGINE is not None else "error",
         "model": MODEL_NAME,
+        "model_path": MODEL_PATH,
+        "config_path": CONFIG_PATH,
         "cuda_enabled": USE_CUDA,
         "cuda_available": torch.cuda.is_available(),
     }

@@ -22,7 +22,7 @@ curl -s http://127.0.0.1:8040/health
 
 curl -X POST "http://127.0.0.1:8040/tts" \
   -H "Content-Type: application/json" \
-  -d '{"text":"Hello from Coqui TTS."}' \
+  -d '{"text":"Merhaba dunya."}' \
   --output test.wav
 ```
 
@@ -32,6 +32,15 @@ Mevcut model isimlerini görmek için:
 ```bash
 curl -s http://127.0.0.1:8040/models
 ```
+
+## XTTS local model_path ile kullanma (senin komutuna benzer)
+`docker-compose.yml` içinde:
+- `COQUI_MODEL_PATH=/path/to/XTTS-v2/model.pth` (veya Coqui TTS'nin beklediği model dosyası)
+- `COQUI_CONFIG_PATH=/path/to/XTTS-v2/config.json`
+
+İstekte:
+- `language: "tr"`
+- `speaker` veya `speaker_wav` gönderin
 
 ## Not
 - Bazı modeller için `speaker`, `speaker_wav` veya `language` alanları gerekir.
