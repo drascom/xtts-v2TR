@@ -11,6 +11,7 @@ services:
       - COQUI_MODEL_NAME=tts_models/multilingual/multi-dataset/xtts_v2
       - COQUI_MODEL_PATH=
       - COQUI_CONFIG_PATH=
+      - COQUI_TOS_AGREED=1
       - COQUI_DEFAULT_LANGUAGE=tr
       - COQUI_DEFAULT_SPEAKER_WAV=speaker_xtts.wav
       - COQUI_USE_CUDA=true
@@ -19,3 +20,4 @@ services:
     volumes:
       - ./data/output:/app/data/output
       - ./data/speakers:/app/data/speakers
+      - ./data/tts-cache:/root/.local/share/tts
