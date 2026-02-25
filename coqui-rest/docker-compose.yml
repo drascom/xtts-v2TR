@@ -8,12 +8,15 @@ services:
     ports:
       - "8040:8040"
     environment:
-      - COQUI_MODEL_NAME=tts_models/tr/common-voice/glow-tts
-      - COQUI_MODEL_PATH=
-      - COQUI_CONFIG_PATH=
-      - COQUI_USE_CUDA=false
+      - COQUI_MODEL_NAME=
+      - COQUI_MODEL_PATH=/app/data/models/XTTS-v2/model.pth
+      - COQUI_CONFIG_PATH=/app/data/models/XTTS-v2/config.json
+      - COQUI_DEFAULT_LANGUAGE=tr
+      - COQUI_DEFAULT_SPEAKER_WAV=speaker_xtts.wav
+      - COQUI_USE_CUDA=true
       - COQUI_OUTPUT_DIR=/app/data/output
       - COQUI_SPEAKERS_DIR=/app/data/speakers
     volumes:
       - ./data/output:/app/data/output
       - ./data/speakers:/app/data/speakers
+      - ./data/models:/app/data/models

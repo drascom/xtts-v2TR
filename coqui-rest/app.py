@@ -17,6 +17,8 @@ CONFIG_PATH = os.getenv("COQUI_CONFIG_PATH", "")
 USE_CUDA = os.getenv("COQUI_USE_CUDA", "false").lower() == "true"
 OUTPUT_DIR = Path(os.getenv("COQUI_OUTPUT_DIR", "/app/data/output"))
 SPEAKERS_DIR = Path(os.getenv("COQUI_SPEAKERS_DIR", "/app/data/speakers"))
+DEFAULT_LANGUAGE = os.getenv("COQUI_DEFAULT_LANGUAGE", "")
+DEFAULT_SPEAKER_WAV = os.getenv("COQUI_DEFAULT_SPEAKER_WAV", "")
 
 ENGINE: Optional[TTS] = None
 
@@ -41,6 +43,12 @@ def _resolve_speaker_wav(speaker_wav: Optional[str]) -> Optional[str]:
     return str(SPEAKERS_DIR / wav_path)
 
 
+def _is_xtts_mode() -> bool:
+    if MODEL_PATH and CONFIG_PATH:
+        return True
+    return "xtts" in MODEL_NAME.lower()
+
+
 def _tts_to_file(req: TTSRequest, out_path: Path) -> None:
     if ENGINE is None:
         raise HTTPException(status_code=500, detail="Model not loaded")
@@ -50,13 +58,24 @@ def _tts_to_file(req: TTSRequest, out_path: Path) -> None:
         "file_path": str(out_path),
     }
 
-    speaker_wav = _resolve_speaker_wav(req.speaker_wav)
+    speaker_wav_value = req.speaker_wav or DEFAULT_SPEAKER_WAV
+    speaker_wav = _resolve_speaker_wav(speaker_wav_value) if speaker_wav_value else None
+    language_value = req.language or DEFAULT_LANGUAGE
+
     if req.speaker:
         kwargs["speaker"] = req.speaker
     if speaker_wav:
         kwargs["speaker_wav"] = speaker_wav
-    if req.language:
-        kwargs["language"] = req.language
+    if language_value:
+        kwargs["language"] = language_value
+
+    if _is_xtts_mode() and "language" not in kwargs:
+        raise HTTPException(status_code=400, detail="language is required in XTTS mode (or set COQUI_DEFAULT_LANGUAGE)")
+    if _is_xtts_mode() and "speaker_wav" not in kwargs and "speaker" not in kwargs:
+        raise HTTPException(
+            status_code=400,
+            detail="speaker_wav or speaker is required in XTTS mode (or set COQUI_DEFAULT_SPEAKER_WAV)",
+        )
 
     try:
         ENGINE.tts_to_file(**kwargs)
@@ -92,9 +111,12 @@ def startup() -> None:
 def health() -> dict:
     return {
         "status": "ok" if ENGINE is not None else "error",
+        "mode": "xtts_local" if _is_xtts_mode() else "standard",
         "model": MODEL_NAME,
         "model_path": MODEL_PATH,
         "config_path": CONFIG_PATH,
+        "default_language": DEFAULT_LANGUAGE,
+        "default_speaker_wav": DEFAULT_SPEAKER_WAV,
         "cuda_enabled": USE_CUDA,
         "cuda_available": torch.cuda.is_available(),
     }
