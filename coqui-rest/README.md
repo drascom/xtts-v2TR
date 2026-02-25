@@ -18,9 +18,9 @@ docker compose up -d
 
 ## Test
 ```bash
-curl -s http://127.0.0.1:8000/health
+curl -s https://tts.drascom.uk/health
 
-curl -X POST "http://127.0.0.1:8000/tts" \
+curl -X POST "https://tts.drascom.uk/tts" \
   -H "Content-Type: application/json" \
   -d '{"text":"Merhaba dunya.","language":"tr","speaker_wav":"speaker_xtts.wav"}' \
   --output test.wav
@@ -39,7 +39,7 @@ Host tarafta gerekli speaker dosyasi:
 
 Bu varsayimlarla istekte yalnizca `text` gondermeniz yeterlidir:
 ```bash
-curl -X POST "http://127.0.0.1:8000/tts" \
+curl -X POST "https://tts.drascom.uk/tts" \
   -H "Content-Type: application/json" \
   -d '{"text":"Merhaba dunya."}' \
   --output test.wav
