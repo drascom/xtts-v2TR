@@ -11,7 +11,7 @@ from TTS.api import TTS
 
 app = FastAPI(title="Coqui TTS REST", version="1.0.0")
 
-MODEL_NAME = os.getenv("COQUI_MODEL_NAME", "tts_models/tr/common-voice/glow-tts")
+MODEL_NAME = os.getenv("COQUI_MODEL_NAME", "tts_models/multilingual/multi-dataset/xtts_v2")
 MODEL_PATH = os.getenv("COQUI_MODEL_PATH", "")
 CONFIG_PATH = os.getenv("COQUI_CONFIG_PATH", "")
 USE_CUDA = os.getenv("COQUI_USE_CUDA", "false").lower() == "true"
